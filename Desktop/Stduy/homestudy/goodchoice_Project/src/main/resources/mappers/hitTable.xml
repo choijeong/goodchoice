@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="hitTable">
+  
+  	<insert id="hitInsert">
+		insert into hitcheck(
+		member_indexkey, good_indexkey,hit_check)
+		values(
+		#{member_indexkey}, #{good_indexkey}, 0)
+	</insert>
+  	
+  	<select id="hitCheck" resultType="int">
+  		update hitcheck set hit_check = 1
+  		where member_indexkey=#{member_indexkey} and good_indexkey=#{good_indexkey}
+  	</select>
+  
+  	<select id="hitCheck_cancel" resultType="int">
+  		update hitcheck set hit_check = 0
+  		where member_indexkey=#{member_indexkey} and good_indexkey=#{good_indexkey}
+  	</select>
+  	
+  	<select id="hitInfo" resultType="com.hoon.goodchoice.gooddto.HitDTO">
+  		select *from hitcheck where member_indexkey=#{member_indexkey} and good_indexkey=#{good_indexkey}
+  	</select>
+  	
+  	<select id="hit" resultType="String">
+  		select hit_check from hitcheck where member_indexkey=#{member_indexkey} and good_indexkey=#{good_indexkey}
+  	</select>
+  
+  
+  	
+  
+  </mapper>

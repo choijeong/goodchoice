@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="goodTable">
+  
+ 	 <select id="GoodList"
+		resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+		select * from goodchoice_board
+	</select>
+	<insert id="GoodWrite" >
+		insert into goodchoice_board(
+		member_indexkey, member_nickname,
+		view_count, hit_count, type, title, contents, reg_dttm, file_count)
+		values(
+		#{member_indexkey}, #{member_nickname}, 0, 0, #{type}, #{title}, #{contents}, now(), #{file_count})
+	</insert>
+
+	<select id="GoodChoiceView"
+		resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+		select *from goodchoice_board where indexkey=#{indexkey}
+	</select>
+	
+	<select id="upView" resultType="int">
+	
+  		update goodchoice_board set view_count = view_count+1 where indexkey=#{indexkey}
+  	</select>	
+	
+	<select id="GoodDelete" resultType="int">
+  		delete from goodchoice_board where indexkey=#{indexkey}
+  	</select>	
+	
+	<!-- 자신의 글이 맞을 때  -->
+	<select id="GoodModifyView" resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+  		select *from goodchoice_board where indexkey=#{indexkey}
+  	</select>	
+  	
+	<select id="GoodModify" resultType="int">
+  		update goodchoice_board set type = #{type}, title= #{title}, contents=#{contents}, reg_dttm= now() where indexkey=#{indexkey}
+  	</select>	
+	
+	<!-- 페이징 처리 -->
+    
+    <select id="GoodPagingList" resultType="com.hoon.goodchoice.gooddto.GoodDTO"> 
+           select *from goodchoice_board where indexkey > 0 order by indexkey desc limit #{pageStart}, #{pageRec}
+    </select>
+ 
+    <!-- 전체 게시글 수를 구하는 sql문 -->
+    <select id="getTotalRec" resultType="int">
+        select count(*) from goodchoice_board
+        where indexkey > 0
+        <include refid="typeSql"></include>
+        <include refid="searchSql"></include>
+    	<!-- 검색어에 따른 총 레코드 수를 다시 계산해야 한다 -->
+    </select> 
+	
+	<!-- 페이징 및 검색 리스트 뽑기 -->	
+	<select id="GoodSearchList" resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+		 select *from goodchoice_board where indexkey > 0 
+		 <include refid="typeSql"></include> 
+		 <include refid="searchSql"></include>
+		 order by 
+		 <include refid="goodorderSql"></include>
+	 	 indexkey desc limit #{pageStart}, #{pageRec}
+	</select>
+
+
+	<!-- type 정하기  -->
+	<sql id="typeSql">
+	<!-- type 0이면 아무것도 없음 -->
+	<if test="type != '0'.toString()">
+		and type = #{type}
+	</if>
+	</sql>
+	
+	<!-- 검색조건 sql -->
+  	<sql id="searchSql"> 
+           <!-- 검색 조건이 null이 아니라면 -->
+           <if test="searchType != null">
+           		<if test="searchType == 'title'.toString()">
+           		<!-- like는  title에 key가 포함되면~ 있다면~  
+           		 concat은 문자열을 합치거나 연결해준다   %key% key가 있으면-->
+           			and title like CONCAT('%', #{keyword}, '%')
+           		</if>
+           		<if test="searchType == 'contents'.toString()">
+           			and contents like CONCAT('%', #{keyword}, '%')
+           		</if>
+           		<if test="searchType == 'nickname'.toString()">
+           			and member_nickname like CONCAT('%', #{keyword}, '%')
+           		</if>
+           		<if test="searchType == 'titlecon'.toString()">
+           			and (title like CONCAT('%', #{keyword}, '%') 
+           			or contents like CONCAT('%', #{keyword}, '%'))
+           		</if>
+           		<if test="searchType == 'all'.toString()">
+           			and (title like CONCAT('%', #{keyword}, '%') 
+           			or contents like CONCAT('%', #{keyword}, '%')
+           			or member_nickname like CONCAT('%',#{keyword}, '%'))
+           		</if>
+           </if>
+    </sql>
+    
+<!--       타입별, 최신순정리     select *from goodchoice_board where indexkey > 0 and type=#{type} order by indexkey desc limit #{pageStart}, #{pageRec} -->
+
+	<sql id="goodorderSql">
+		<choose>
+			<when test="goodorder == 'hit_count'.toString() ">
+			 hit_count desc ,
+			</when>
+			<when test="goodorder == 'reg_dttm'.toString() ">
+			 reg_dttm desc ,
+			</when>
+			<when test="goodorder == 'view_count'.toString() ">
+			 view_count desc ,
+			</when>
+		</choose>
+	</sql> 
+
+  	<select id="hit_up" resultType="int">
+  		update goodchoice_board set hit_count = hit_count+1 where indexkey=#{indexkey}
+  	</select>
+  	<select id="hit_down" resultType="int">
+  		update goodchoice_board set hit_count = hit_count-1 where indexkey=#{indexkey}
+  	</select>
+  	
+  	
+  	<select id="hitList" resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+  		select *from goodchoice_board order by hit_count desc limit 0 ,3 
+  	</select>
+  	
+  	<select id="viewList" resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+  		select *from goodchoice_board order by view_count desc limit 1 ,5 
+  	</select>
+  	
+  	<select id="dttmList" resultType="com.hoon.goodchoice.gooddto.GoodDTO">
+  		select *from goodchoice_board order by reg_dttm desc limit 1 ,5 
+  	</select>
+
+  </mapper>

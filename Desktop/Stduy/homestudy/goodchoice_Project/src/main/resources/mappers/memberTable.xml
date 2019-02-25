@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="memberTable">
+
+	<select id="memberIdCheck" resultType="int">
+		select count(*) from
+		goodchoice_member where id_email = #{id_email}
+	</select>
+	
+	<select id="nicknameCheck" resultType="int">
+		select count(*) from
+		goodchoice_member where nickname = #{nickname}
+	</select>
+
+	<select id="memberInsert" resultType="int">
+		insert into
+		goodchoice_member(id_email,password,nickname, phone, reg_dttm, addr, addrdetail) 
+		values (#{id_email},#{password},#{nickname},#{phone},now(),#{addr},#{addrdetail})
+	</select>
+
+	<select id="memberLogin" resultType="int">
+		select count(*) from
+		goodchoice_member where id_email=#{id_email} and
+		password=#{password}
+	</select>
+
+	<select id="memberHidden"
+		resultType="com.hoon.goodchoice.memberdto.MemberDTO">
+		select * from goodchoice_member where id_email=#{id_email} and password=#{password}
+	</select>
+
+	<select id="memberHidden2"
+		resultType="com.hoon.goodchoice.memberdto.MemberDTO">
+		select * from goodchoice_member where indexkey = #{indexkey}
+	</select>
+
+	<select id="memberDelete" resultType="int">
+		delete from
+		goodchoice_member where id_email=#{id_email} and
+		password=#{password}
+	</select>
+
+	<select id="memberInfoView"
+		resultType="com.hoon.goodchoice.memberdto.MemberDTO">
+		select * from goodchoice_member where nickname=#{nickname}
+	</select>
+
+	<select id="memberModifyView"
+		resultType="com.hoon.goodchoice.memberdto.MemberDTO">
+		select * from goodchoice_member where indexkey=#{indexkey} 
+	</select>
+
+	<select id="memberModify" resultType="int">
+		update goodchoice_member
+		set password=#{password} , nickname=#{nickname} , phone = #{phone} ,
+		reg_dttm = now()
+		where id_email=#{id_email}
+	</select>
+
+	<select id="memberList"
+		resultType="com.hoon.goodchoice.memberdto.MemberDTO">
+		select * from goodchoice_member
+	</select>
+	
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UploadFileTable">
+	<insert id="addFile">
+		<!-- 파일업로드는 게시글 작성과 동시에 저장이 된다 이전글에서 파일업로드를 하지않았더라도 기존에 게시글 PK에 +1 더한값이 
+			이번에 생성되는 레코드의 PK값이기 때문에 파일업로드를 하는 게시글과 동일한 값을 추가할 수 있다 -->
+	<!-- 	
+	No setter found for the keyProperty 'good_indexkey' in java.lang.String.
+	이유를 못찾겠다 
+	<selectKey keyProperty="good_indexkey" order="BEFORE"
+			resultType="int">
+			select MAX(indexkey)+1 from goodchoice_board
+		</selectKey> -->
+
+		insert into uploadfile(good_indexkey, fileName)
+		values( #{good_indexkey}, #{fileName})
+
+		<!-- <selectKey resultType="int" keyProperty="good_indexkey" order="AFTER"> 
+			select last_insert_id() </selectKey> 마지막 파일저장 네임값 들어오는듯 하다 -->
+	</insert>
+
+
+	<!-- auto_increment 값 불러오기 -->
+	<select id="getGood_indexkey" resultType="int">
+		select Max(indexkey) from goodchoice_board 
+	</select>
+	
+	<!-- 파일목록 불러오기 -->
+	<select id="getUploadList" resultType="String">
+		select fileName from uploadfile where good_indexkey= #{good_indexkey}
+	</select>
+	
+		<!-- 파일목록 불러오기 -->
+	<select id="getListImg" resultType="com.hoon.goodchoice.gooddto.UploadFileDTO">
+		select * from uploadfile where good_indexkey= #{good_indexkey}
+	</select>
+
+	<!-- 업로드파일 전부 삭제하기 -->
+	<delete id="deleteAllFiles">
+		delete from uploadfile
+		where good_indexkey=#{good_indexkey}
+	</delete>
+
+	<delete id="deleteFile">
+		delete from uploadfile
+		where fileName=#{fileName}
+	</delete>
+
+	<insert id="modifyFile">
+		insert into uploadfile(good_indexkey, fileName)
+		values(#{good_indexkey}, #{fileName})
+	</insert>
+
+	<update id="updateFile_count">
+		update goodchoice_board 
+		set file_count = (
+		select count(good_indexkey) from uploadfile where good_indexkey=#{good_indexkey}
+		) where good_indexkey=#{good_indexkey}
+		
+	</update>	
+
+</mapper>
+  

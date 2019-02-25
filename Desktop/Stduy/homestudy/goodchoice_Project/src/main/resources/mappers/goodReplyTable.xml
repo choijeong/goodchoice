@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="goodReplyTable">
+
+	<!-- 댓글 작성 -->
+	<insert id="goodReplyWrite">
+		
+		<selectKey keyProperty="reply_origin" order="BEFORE" resultType="int">
+			
+			select ifnull(MAX(indexkey),0) + 1 from goodchoice_reply_board
+		</selectKey>
+	
+		insert into goodchoice_reply_board(good_indexkey, member_nickname,
+		hit_count, reply_origin,reply_group, reply_step, contents, reg_dttm, update_dttm)
+		values(#{good_indexkey}, #{member_nickname},0,#{reply_origin},0,0, #{contents}, now(), now())
+	</insert>
+		<!-- select last_insert_id(); 값이 같이 들어올경우 에러가 생길수 있다-->
+	<!-- 	 selectkey를 사용하면 더 쉽다 
+	MAX()+1 
+		<insert id="goodReplyWrite">
+			<selectKey keyColumn="indexkey" keyProperty="origin" resultType="int">select last_insert_id()</selectKey>
+		insert into goodchoice_reply_board(good_indexkey, member_nickname,
+		hit_count, reply_origin,reply_group, reply_step, contents, reg_dttm,
+		update_dttm)
+		values(#{good_indexkey}, #{member_nickname},0,0,0,0, #{contents}, now(), now())
+		</insert> -->
+	
+	<!-- auto_increment 값 불러오기 -->
+	<select id="getReply_origin" resultType="int">
+		select indexkey from GOODCHOICE_REPLY_BOARD where
+		good_indexkey=#{good_indexkey} and member_nickname=#{member_nickname}
+		and reply_origin=0
+	</select>
+	<!-- 가져온 id값 origin에 넣기 -->
+	<update id="setReply_origin">
+		update goodchoice_reply_board set reply_origin = #{indexkey} where indexkey
+		= #{indexkey}
+	</update>
+
+	<!-- 대댓전에 그룹 정렬  -->
+	<update id="getReplygroup"  >
+		update goodchoice_reply_board
+		set reply_group=reply_group+1
+		where good_indexkey=#{good_indexkey} and reply_origin = #{reply_origin} and reply_group > #{reply_group}<!--부모 값  --> 
+	</update>
+	
+	<!-- 대댓 작성 -->
+	<insert id="goodReplyReply">
+		insert into goodchoice_reply_board(good_indexkey, member_nickname,
+		hit_count, reply_origin,reply_group, reply_step, contents, reg_dttm,
+		update_dttm)
+		values(#{good_indexkey}, #{member_nickname}, 0, #{reply_origin}
+		,#{reply_group} + 1 ,#{reply_step} + 1, #{contents}, now(), now())
+	</insert>
+	
+	
+
+	<!-- 수정할 DB 불러오기 -->
+	<select id="goodReplyModifyView"
+		resultType="com.hoon.goodchoice.gooddto.GoodReplyDTO">
+		select *from goodchoice_reply_board where indexkey=#{indexkey}
+	</select>
+
+
+
+	<!-- 수정 -->
+	<update id="goodReplyModify">
+		update goodchoice_reply_board set contents = #{contents} , update_dttm=now()
+		where indexkey=#{indexkey} ;
+	</update>
+
+	<!-- 삭제 -->
+	<delete id="goodReplyDelete">
+		delete from goodchoice_reply_board where indexkey=#{indexkey}
+	</delete>
+
+	<!-- 댓글 목록 -->
+	<select id="goodReplyList"
+		resultType="com.hoon.goodchoice.gooddto.GoodReplyDTO">
+		select * from goodchoice_reply_board where good_indexkey=#{good_indexkey}
+		order by reply_origin desc, reply_group asc limit #{pBase.pageStart}
+		,#{pBase.pageRec}
+	</select>
+
+	<!-- 총 레코드 수 구하기 -->
+	<select id="getTotalRec" resultType="int">
+		select count(good_indexkey) from goodchoice_reply_board where
+		good_indexkey=#{good_indexkey}
+	</select>
+
+
+</mapper>
